@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Black Burger 🍔</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#121212;color:#E0E0E0;padding-bottom:80px}
+header{background:#1A1A1A;padding:15px;text-align:center;border-bottom:1px solid #2A2A2A}
+h1{font-size:22px;color:#FFF}h1 span{color:#D4AF37}
+.btn-admin{position:fixed;top:10px;right:10px;padding:8px 12px;background:#242424;color:#D4AF37;border:none;border-radius:8px;cursor:pointer;z-index:99}
+nav{display:flex;justify-content:center;gap:8px;padding:12px;background:#181818;border-bottom:1px solid #242424;flex-wrap:wrap}
+nav button{padding:10px 16px;border:none;border-radius:8px;background:#242424;color:#AAA;cursor:pointer}
+nav button.ativo{background:#D4AF37;color:#000;font-weight:bold}
+.esconder{display:none!important}
+main{padding:12px;max-width:500px;margin:0 auto}
+.pagina{display:none}.pagina.ativa{display:block}
+h2{font-size:18px;text-align:center;margin:15px 0;color:#FFF}h2 span{color:#D4AF37}
+
+.categorias{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:15px}
+.categoria{padding:8px 14px;background:#242424;border:none;border-radius:20px;color:#AAA;white-space:nowrap;cursor:pointer}
+.categoria.ativa{background:#D4AF37;color:#000;font-weight:bold}
+
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.prod{background:#1A1A1A;border-radius:12px;border:1px solid #262626;overflow:hidden}
+.prod-img{width:100%;height:110px;background:#222;display:flex;align-items:center;justify-content:center;font-size:40px}
+.prod-img img{width:100%;height:100%;object-fit:cover}
+.prod-body{padding:10px}
+.prod-nome{font-size:14px;font-weight:bold;margin-bottom:4px}
+.prod-desc{font-size:12px;color:#888;margin-bottom:8px}
+.prod-preco{font-size:16px;color:#D4AF37;font-weight:bold;margin-bottom:8px}
+.qtd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.qtd button{width:30px;height:30px;border:none;border-radius:6px;background:#2A2A2A;color:#FFF;font-size:18px;cursor:pointer}
+.qtd span{font-weight:bold}
+.add-btn{width:100%;padding:8px;border:none;border-radius:6px;background:#D4AF37;color:#000;font-weight:bold;cursor:pointer}
+.carrinho-btn{position:fixed;bottom:20px;right:20px;width:60px;height:60px;border-radius:50%;background:#D4AF37;border:none;font-size:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.5);z-index:90}
+.carrinho-btn span{position:absolute;top:-5px;right:-5px;background:#E53935;color:#FFF;font-size:12px;font-weight:bold;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+
+.filtros{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:15px}
+.filtro-btn{padding:6px 12px;background:#242424;border:none;border-radius:6px;color:#AAA;cursor:pointer;font-size:13px}
+.filtro-btn.ativo{background:#D4AF37;color:#000;font-weight:bold}
+
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:15px;z-index:200}
+.modal.aberto{display:flex}
+.modal-content{background:#1E1E1E;border-radius:12px;width:100%;max-width:400px;max-height:90vh;overflow-y:auto;padding:20px;border:1px solid #2A2A2A}
+.modal-topo{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.fechar{width:32px;height:32px;border:none;border-radius:50%;background:#2A2A2A;color:#FFF;font-size:18px;cursor:pointer}
+input,select,textarea{width:100%;padding:12px;margin:8px 0;border:1px solid #333;border-radius:8px;background:#222;color:#FFF;font-size:15px}
+input:focus,select:focus,textarea:focus{border-color:#D4AF37;outline:none}
+label{font-size:14px;color:#999;margin-top:12px;display:block}
+.btn{width:100%;padding:14px;border:none;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:15px}
+.btn-dourado{background:#D4AF37;color:#000}
+.btn-vermelho{background:#C62828;color:#FFF}
+.btn-cinza{background:#2A2A2A;color:#FFF}
+.btn-pequeno{width:auto;padding:8px 12px;font-size:14px;margin:0;border-radius:6px}
+
+.pedido-card{background:#1E1E1E;border-radius:10px;padding:15px;margin-bottom:12px;border-left:4px solid #D4AF37;border:1px solid #2A2A2A}
+.status-NOVO{border-left-color:#E53935}.status-PREPARANDO{border-left-color:#F59E0B}
+.status-PRONTO{border-left-color:#D4AF37}.status-ENTREGUE{border-left-color:#10B981}
+.botoes{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.passo{display:flex;align-items:center;gap:12px;padding:12px 0;opacity:.4}
+.passo.ativo{opacity:1}
+.passo-bolinha{width:36px;height:36px;border-radius:50%;background:#2A2A2A;display:flex;align-items:center;justify-content:center;font-size:18px}
+.passo.ativo .passo-bolinha{background:#D4AF37;color:#000}
+.caixa-card{background:#1E1E1E;border-radius:10px;padding:20px;border:1px solid #2A2A2A}
+.caixa-total{font-size:32px;font-weight:bold;color:#D4AF37;text-align:center;margin:10px 0}
+.caixa-linha{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #2A2A2A;font-size:15px}
+.sem-pedidos{text-align:center;color:#888;padding:40px}
+@media(max-width:380px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<button class="btn-admin" onclick="abrirLogin()">🔐 Admin</button>
+<header><h1>BLACK <span>BURGER</span> 🍔</h1></header>
+
+<nav id="menu-cliente">
+<button class="ativo" onclick="mostrarPag('cardapio')">🍔 Cardápio</button>
+<button onclick="mostrarPag('acompanhar')">📦 Meu Pedido</button>
+</nav>
+
+<nav id="menu-admin" class="esconder">
+<button class="ativo" onclick="mostrarPagAdmin('pedidos')">📦 Pedidos</button>
+<button onclick="mostrarPagAdmin('caixa')">💰 Caixa</button>
+<button onclick="mostrarPagAdmin('relatorios')">📊 Relatórios</button>
+<button class="btn-vermelho" onclick="sair()">🚪 Sair</button>
+</nav>
+
+<main>
+<div id="pag-cardapio" class="pagina ativa">
+<h2>Nosso <span>Cardápio</span></h2>
+<div class="categorias">
+<button class="categoria ativa" onclick="filtrarCategoria('todos')">Todos</button>
+<button class="categoria" onclick="filtrarCategoria('lanches')">🍔 Lanches</button>
+<button class="categoria" onclick="filtrarCategoria('acompanhamentos')">🍟 Acompanhamentos</button>
+<button class="categoria" onclick="filtrarCategoria('bebidas')">🥤 Bebidas</button>
+</div>
+<div class="grid" id="lista-prod"></div>
+</div>
+
+<div id="pag-acompanhar" class="pagina">
+<h2><span>📦</span> Status do Pedido</h2>
+<div id="conteudo-acomp"></div>
+</div>
+
+<div id="pag-pedidos" class="pagina">
+<h2><span>📦</span> Pedidos Recebidos</h2>
+<div class="filtros">
+<button class="filtro-btn ativo" onclick="filtrarPedidos('todos')">Todos</button>
+<button class="filtro-btn" onclick="filtrarPedidos('NOVO')">⏳ Novos</button>
+<button class="filtro-btn" onclick="filtrarPedidos('PREPARANDO')">🔥 Preparando</button>
+<button class="filtro-btn" onclick="filtrarPedidos('PRONTO')">✅ Prontos</button>
+<button class="filtro-btn" onclick="filtrarPedidos('ENTREGUE')">🏠 Entregues</button>
+</div>
+<button class="btn-vermelho btn-pequeno" onclick="apagarTodos()">🗑️ Apagar TODOS</button>
+<div id="lista-pedidos"></div>
+</div>
+
+<div id="pag-caixa" class="pagina">
+<h2><span>💰</span> Caixa</h2>
+<div class="caixa-card">
+<p style="text-align:center;color:#888;font-size:15px" id="qtd-total">0 pedidos</p>
+<p class="caixa-total" id="valor-total">R$ 0,00</p>
+<div class="caixa-linha"><span>✅ Entregues</span><span id="valor-entregues">R$ 0,00</span></div>
+<div class="caixa-linha"><span>🔥 Em Preparo</span><span id="valor-preparando">R$ 0,00</span></div>
+<div class="caixa-linha"><span>⏳ Pendentes</span><span id="valor-novos">R$ 0,00</span></div>
+<div class="caixa-linha"><span>🚚 Taxas</span><span id="valor-taxas">R$ 0,00</span></div>
+<div class="caixa-linha" style="border-top:2px solid #D4AF37;border-bottom:none;font-weight:bold">
+<span>💵 Total Líquido</span><span id="valor-liquido">R$ 0,00</span>
+</div>
+</div>
+</div>
+
+<div id="pag-relatorios" class="pagina">
+<h2><span>📊</span> Relatórios</h2>
+<div class="caixa-card">
+<div class="filtros" style="margin-bottom:20px">
+<button class="filtro-btn ativo" onclick="carregarRelatorio('hoje')">Hoje</button>
+<button class="filtro-btn" onclick="carregarRelatorio('semana')">Esta Semana</button>
+<button class="filtro-btn" onclick="carregarRelatorio('mes')">Este Mês</button>
+<button class="filtro-btn" onclick="carregarRelatorio('todos')">Todo o Período</button>
+</div>
+<p style="color:#888;font-size:14px;text-align:center;margin-bottom:15px" id="rel-periodo">Período: —</p>
+<p style="text-align:center;color:#888;font-size:15px" id="rel-qtd">0 pedidos</p>
+<p class="caixa-total" id="rel-total">R$ 0,00</p>
+<div class="caixa-linha"><span>✅ Entregues</span><span id="rel-entregues">R$ 0,00</span></div>
+<div class="caixa-linha"><span>🔥 Em Andamento</span><span id="rel-andamento">R$ 0,00</span></div>
+<div class="caixa-linha"><span>🚚 Taxas de Entrega</span><span id="rel-taxas">R$ 0,00</span></div>
+<div class="caixa-linha" style="border-top:2px solid #D4AF37;border-bottom:none;font-weight:bold">
+<span>💵 Total Líquido</span><span id="rel-liquido">R$ 0,00</span>
+</div>
+</div>
+</div>
+</main>
+
+<button class="carrinho-btn" id="btn-carrinho" onclick="abrirCarrinho()">🛒<span id="badge">0</span></button>
+
+<div class="modal" id="modal-login">
+<div class="modal-content">
+<div class="modal-topo"><h3>🔐 Acesso Admin</h3><button class="fechar" onclick="fecharLogin()">×</button></div>
+<input type="password" id="senha-admin" placeholder="Digite a senha">
+<button class="btn btn-dourado" onclick="entrar()">Entrar</button>
+</div>
+</div>
+
+<div class="modal" id="modal-carrinho">
+<div class="modal-content">
+<div class="modal-topo"><h3>🛒 Carrinho</h3><button class="fechar" onclick="fecharCarrinho()">×</button></div>
+<div id="itens-carrinho"></div>
+<div style="margin-top:15px;padding-top:15px;border-top:1px solid #333">
+<p style="display:flex;justify-content:space-between;font-size:15px">Subtotal: <span id="sub">R$ 0,00</span></p>
+<p style="display:flex;justify-content:space-between;font-size:15px">Entrega: <span id="tx">R$ 5,00</span></p>
+<p style="display:flex;justify-content:space-between;font-size:18px;font-weight:bold;color:#D4AF37;margin-top:8px">Total: <span id="total">R$ 0,00</span></p>
+</div>
+<button class="btn btn-dourado" onclick="irDados()">Continuar →</button>
+</div>
+</div>
+
+<div class="modal" id="modal-dados">
+<div class="modal-content">
+<div class="modal-topo"><h3>📝 Seus Dados</h3><button class="fechar" onclick="fecharDados()">×</button></div>
+<label>Nome *</label><input type="text" id="nome" placeholder="Seu nome">
+<label>Telefone *</label><input type="tel" id="tel" placeholder="(00) 00000-0000">
+<label>Endereço *</label><input type="text" id="end" placeholder="Rua, número, bairro">
+<label>Entrega ou Retirada?</label>
+<select id="tipo" onchange="atualizaResumo()">
+<option value="entrega">🏠 Entrega (R$ 5,00)</option>
+<option value="retirada">🏪 Retirada (Grátis)</option>
+</select>
+<label>Pagamento</label>
+<select id="pag">
+<option value="dinheiro">💵 Dinheiro</option>
+<option value="pix">💲 Pix</option>
+<option value="cartao">💳 Cartão</option>
+</select>
+<label>Observação</label>
+<textarea id="obs" placeholder="Ex: sem cebola..."></textarea>
+<button class="btn btn-dourado" onclick="enviarPedido()">✅ Confirmar Pedido</button>
+</div>
+</div>
+
+<div class="modal" id="modal-sucesso">
+<div class="modal-content" style="text-align:center">
+<h3 style="color:#10B981;font-size:22px;margin-bottom:10px">✅ Pedido Realizado!</h3>
+<p style="color:#888">Seu pedido nº <span id="n-pedido" style="color:#D4AF37;font-weight:bold">0</span> foi enviado!</p>
+<button class="btn btn-dourado" onclick="verAcomp()">📦 Acompanhar</button>
+<button class="btn btn-cinza" onclick="novoPedido()">🍔 Novo Pedido</button>
+</div>
+</div>
+
+<script>
+const SENHA_ADMIN = '2105';
+const TAXA_ENTREGA = 5;
+const STATUS = ['NOVO', 'PREPARANDO', 'PRONTO', 'ENTREGUE'];
+
+const cardapio = [
+  { id: 1, nome: 'Smash Burger', desc: 'Hambúrguer, queijo, alface', preco: 22, categoria: 'lanches', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop' },
+  { id: 2, nome: 'Smash Bacon', desc: 'Hambúrguer, queijo, bacon', preco: 28, categoria: 'lanches', img: 'https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400&h=300&fit=crop' },
+  { id: 3, nome: 'Double Burger', desc: 'Dois hambúrgueres, queijo', preco: 32, categoria: 'lanches', img: 'https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=400&h=300&fit=crop' },
+  { id: 4, nome: 'Burger BBQ', desc: 'Hambúrguer, cheddar, molho BBQ', preco: 30, categoria: 'lanches', img: 'https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?w=400&h=300&fit=crop' },
+  { id: 5, nome: 'Batata Frita', desc: 'Porção crocante', preco: 12, categoria: 'acompanhamentos', img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400&h=300&fit=crop' },
+  { id: 6, nome: 'Batata C/ Queijo', desc: 'Com queijo derretido', preco: 18, categoria: 'acompanhamentos', img: 'https://images.unsplash.com/photo-1639024471283-03518883512d?w=400&h=300&fit=crop' },
+  { id: 7, nome: 'Refrigerante', desc: 'Lata 350ml', preco: 6, categoria: 'bebidas', img: 'https://images.unsplash.com/photo-1554866585-cd94860890b7?w=400&h=300&fit=crop' },
+  { id: 8, nome: 'Água', desc: 'Sem gás 500ml', preco: 4, categoria: 'bebidas', img: 'https://images.unsplash.com/photo-1548839140-29a7e4e36c91?w=400&h=300&fit=crop' }
+];
+
+let carrinho = [], admin = false;
+let categoriaAtiva = 'todos';
+let filtroPedido = 'todos';
+let ultimoTotalPedidos = 0;
+
+function fmt(v) { return 'R$ ' + v.toFixed(2).replace('.', ',') }
+
+window.onload = function() {
+  renderCardapio();
+  atualizaBadge();
+  setInterval(verificarNovosPedidos, 3000);
+};
+
+function mostrarPag(nome) {
+  document.querySelectorAll('.pagina').forEach(p => p.classList.remove('ativa'));
+  document.getElementById('pag-' + nome).classList.add('ativa');
+  document.querySelectorAll('#menu-cliente button').forEach(b => b.classList.remove('ativo'));
+  event.target.classList.add('ativo');
+  if (nome === 'acompanhar') carregarAcomp();
+}
+
+function mostrarPagAdmin(nome) {
+  document.querySelectorAll('.pagina').forEach(p => p.classList.remove('ativa'));
+  document.getElementById('pag-' + nome).classList.add('ativa');
+  document.querySelectorAll('#menu-admin button').forEach(b => b.classList.remove('ativo'));
+  event.target.classList.add('ativo');
+  if (nome === 'pedidos') carregarPedidos();
+  if (nome === 'caixa') carregarCaixa();
+  if (nome === 'relatorios') carregarRelatorio('hoje');
+}
+
+function abrirLogin() { document.getElementById('modal-login').classList.add('aberto') }
+function fecharLogin() { document.getElementById('modal-login').classList.remove('aberto'); document.getElementById('senha-admin').value = '' }
+function entrar() {
+  if (document.getElementById('senha-admin').value === SENHA_ADMIN) {
+    admin = true; fecharLogin();
+    document.getElementById('menu-cliente').classList.add('esconder');
+    document.getElementById('menu-admin').classList.remove('esconder');
+    document.getElementById('btn-carrinho').classList.add('esconder');
+    document.querySelector('.btn-admin').classList.add('esconder');
+    document.querySelectorAll('.pagina').forEach(p => p.classList.remove('ativa'));
+    document.getElementById('pag-pedidos').classList.add('ativa');
+    document.querySelectorAll('#menu-admin button').forEach((b, i) => b.classList.toggle('ativo', i === 0));
+    carregarPedidos();
+  } else alert('❌ Senha incorreta!');
+}
+function sair() {
+  admin = false;
+  document.getElementById('menu-admin').classList.add('esconder');
+  document.getElementById('menu-cliente').classList.remove('esconder');
+  document.getElementById('btn-carrinho').classList.remove('esconder');
+  document.querySelector('.btn-admin').classList.remove('esconder');
+  document.querySelectorAll('#menu-cliente button').forEach((b, i) => b.classList.toggle('ativo', i === 0));
+  document.querySelectorAll('.pagina').forEach(p => p.classList.remove('ativa'));
+  document.getElementById('pag-cardapio').classList.add('ativa');
+}
+
+function filtrarCategoria(cat) {
+  categoriaAtiva = cat;
+  document.querySelectorAll('.categoria').forEach(b => b.classList.remove('ativo'));
+  event.target.classList.add('ativo');
+  renderCardapio();
+}
+
+function renderCardapio() {
+  const c = document.getElementById('lista-prod'); c.innerHTML = '';
+  const filtrados = categoriaAtiva === 'todos' ? cardapio : cardapio.filter(p => p.categoria === categoriaAtiva);
+  filtrados.forEach(p => {
+    const div = document.createElement('div'); div.className = 'prod';
+    div.innerHTML = `
+      <div class="prod-img"><img src="${p.img}" alt="${p.nome}"></div>
+      <div class="prod-body">
+        <h3 class="prod-nome">${p.nome}</h3>
+        <p class="prod-desc">${p.desc}</p>
+        <p class="prod-preco">${fmt(p.preco)}</p>
+        <div class="qtd">
+          <button onclick="mudaQtd(${p.id},-1)">−</button>
+          <span id="qtd-${p.id}">0</span>
+          <button onclick="mudaQtd(${p.id},1)">+</button>
+        </div>
+        <button class="add-btn" onclick="addCarrinho(${p.id})">Adicionar</button>
+      </div>`;
+    c.appendChild(div);
+  });
+}
+
+function mudaQtd(id, delta) {
+  const el = document.getElementById('qtd-' + id);
+  el.textContent = Math.max(0, parseInt(el.textContent) + delta);
+}
+
+function addCarrinho(id) {
+  const qtd = parseInt(document.getElementById('qtd-' + id).textContent);
+  if (qtd <= 0) return alert('⚠️ Escolha a quantidade!');
+  const prod = cardapio.find(p => p.id === id);
+  const item = carrinho.find(i => i.id === id);
+  item ? item.quantidade += qtd : carrinho.push({ ...prod, quantidade: qtd });
+  document.getElementById('qtd-' + id).textContent = '0';
+  atualizaBadge();
+  alert('✅ Adicionado!');
+}
+
+function atualizaBadge() {
+  document.getElementById('badge').textContent = carrinho.reduce((s, i) => s + i.quantidade, 0);
+}
+
+function abrirCarrinho() {
+  if (!carrinho.length) return alert('🛒 Carrinho vazio!');
+  renderCarrinho();
+  document.getElementById('modal-carrinho').classList.add('aberto');
+}
+function fecharCarrinho() { document.getElementById('modal-carrinho').classList.remove('aberto') }
+
+function renderCarrinho() {
+  const c = document.getElementById('itens-carrinho'); c.innerHTML = '';
+  carrinho.forEach((item, idx) => {
+    c.innerHTML += `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #2A2A2A">
+        <div>
+          <p style="font-weight:bold">${item.nome}</p>
+          <p style="color:#D4AF37">${fmt(item.preco)} cada</p>
+          <div class="qtd" style="width:100px;margin-top:5px">
+            <button onclick="alteraItem(${idx},-1)">−</button>
+            <span>${item.quantidade}</span>
+            <button onclick="alteraItem(${idx},1)">+</button>
+          </div>
+        </div>
+        <button style="background:none;border:none;color:#E53935;font-size:20px;cursor:pointer" onclick="removeItem(${idx})">✕</button>
+      </div>`;
+  });
+  atualizaResumo();
+}
+
+function removeItem(idx) { carrinho.splice(idx, 1); renderCarrinho(); atualizaBadge() }
+function alteraItem(idx, delta) {
+  carrinho[idx].quantidade += delta;
+  if (carrinho[idx].quantidade <= 0) carrinho.splice(idx, 1);
+  renderCarrinho(); atualizaBadge();
+}
+
+function atualizaResumo() {
+  const subtotal = carrinho.reduce((s, i) => s + i.preco * i.quantidade, 0);
+  const tx = document.getElementById('tipo')?.value === 'entrega' ? TAXA_ENTREGA : 0;
+  document.getElementById('sub').textContent = fmt(subtotal);
+  document.getElementById('tx').textContent = tx ? fmt(tx) : 'Grátis';
+  document.getElementById('total').textContent = fmt(subtotal + tx);
+}
+
+function irDados() { fecharCarrinho(); document.getElementById('modal-dados').classList.add('aberto') }
+function fecharDados() { document.getElementById('modal-dados').classList.remove('aberto') }
+
+function enviarPedido() {
+  const nome = document.getElementById('nome').value.trim();
+  const tel = document.getElementById('tel').value.trim();
+  const end = document.getElementById('end').value.trim();
+  const tipo = document.getElementById('tipo').value;
+  const pgto = document.getElementById('pag').value;
+  const obs = document.getElementById('obs').value.trim() || 'Nenhuma';
+
+  if (!nome || !tel || !end) return alert('⚠️ Preencha todos os dados!');
+
+  const subtotal = carrinho.reduce((s, i) => s + i.preco * i.quantidade, 0);
+  const tx = tipo === 'entrega' ? TAXA_ENTREGA : 0;
+  const total = subtotal + tx;
+
+  const pedidos = JSON.parse(localStorage.getItem('blackburger_pedidos') || '[]');
+  const ultimo = pedidos.length ? Math.max(...pedidos.map(p => p.numeroPedido)) : 0;
+  const novo = {
+    id: Date.now(), numeroPedido: ultimo + 1,
+    itens: carrinho.map(i => ({ nome: i.nome, quantidade: i.quantidade, preco: i.preco })),
+    cliente: { nome, tel, endereco: end },
+    tipoEntrega: tipo, taxa: tx, subtotal, total,
+    pagamento: pgto, obs, status: 'NOVO',
+    data: new Date().toLocaleString('pt-BR'),
+    timestamp: Date.now()
+  };
+
+  pedidos.unshift(novo);
+  localStorage.setItem('blackburger_pedidos', JSON.stringify(pedidos));
+  localStorage.setItem('blackburger_ultimo', JSON.stringify(novo.id));
+
+  carrinho = []; atualizaBadge();
+  fecharDados();
+  document.getElementById('n-pedido').textContent = novo.numeroPedido;
+  document.getElementById('modal-sucesso').classList.add('aberto');
+}
+
+function verAcomp() { document.getElementById('modal-sucesso').classList.remove('aberto'); mostrarPag('acompanhar'); }
+function novoPedido() { document.getElementById('modal-sucesso').classList.remove('aberto'); mostrarPag('cardapio'); }
+
+function carregarAcomp() {
+  const ultimoId = localStorage.getItem('blackburger_ultimo');
+  const c = document.getElementById('conteudo-acomp');
+  if (!ultimoId) {
+    c.innerHTML = '<p style="text-align:center;color:#888;padding:40px">Você ainda não fez nenhum pedido</p>';
+    return;
+  }
+  const pedidos = JSON.parse(localStorage.getItem('blackburger_pedidos') || '[]');
+  const pedido = pedidos.find(p => p.id === parseInt(ultimoId));
+  if (!pedido) {
+    c.innerHTML = '<p style="text-align:center;color:#888;padding:40px">Pedido não encontrado</p>';
+    return;
+  }
+  const stIdx = STATUS.indexOf(pedido.status);
+  c.innerHTML = `
+    <p style="color:#888;margin-bottom:20px">Pedido nº <strong style="color:#D4AF37;font-size:18px">${pedido.numeroPedido}</strong> • ${pedido.data}</p>
+    ${STATUS.map((s, i) => `
+      <div class="passo ${i <= stIdx ? 'ativo' : ''}">
+        <div class="passo-bolinha">${i <= stIdx ? '✓' : i + 1}</div>
+        <div>
+          <strong>${['Recebido', 'Preparando', 'Pronto', 'Entregue'][i]}</strong>
+          <p style="color:#777;font-size:13px">${['Pedido recebido', 'Preparando seu lanche', 'Já está pronto!', 'Bom apetite!'][i]}</p>
+        </div>
+      </div>`).join('')}
+    <div style="margin-top:25px;padding:15px;background:#1A1A1A;border-radius:10px;border:1px solid #2A2A2A">
+      <p style="color:#FFF;font-weight:bold;margin-bottom:10px">Itens do Pedido:</p>
+      ${pedido.itens.map(i => `<p style="color:#AAA;margin-bottom:5px">${i.quantidade}x ${i.nome} — ${fmt(i.preco * i.quantidade)}</p>`).join('')}
+      <hr style="border:none;border-top:1px solid #333;margin:10px 0">
+      <p style="color:#D4AF37;font-weight:bold;font-size:16px">Total: ${fmt(pedido.total)}</p>
+      <p style="color:#888;font-size:14px">Entrega: ${pedido.tipoEntrega === 'entrega' ? fmt(pedido.taxa) : 'Retirada - Grátis'}</p>
+      <p style="color:#888;font-size:14px">Pagamento: ${pedido.pagamento}</p>
+      ${pedido.obs !== 'Nenhuma' ? `<p style="color:#888;font-size:14px;margin-top:8px">Obs: ${pedido.obs}</p>` : ''}
+    </div>`;
+}
+
+function filtrarPedidos(filtro) {
+  filtroPedido = filtro;
+  document.querySelectorAll('.filtros .filtro-btn').forEach(b => b.classList.remove('ativo'));
+  event.target.classList.add('ativo');
+  carregarPedidos();
+}
+
+function carregarPedidos() {
+  const pedidos = JSON.parse(localStorage.getItem('blackburger_pedidos') || '[]');
+  const c = document.getElementById('lista-pedidos');
+  const filtrados = filtroPedido === 'todos' ? pedidos : pedidos.filter(p => p.status === filtroPedido);
+  if (!filtrados.length) {
+    c.innerHTML = '<p class="sem-pedidos">Nenhum pedido encontrado</p>';
+    return;
+  }
+  c.innerHTML = '';
+  filtrados.forEach(p => {
+    const stIdx = STATUS.indexOf(p.status);
+    const div = document.createElement('div');
+    div.className = `pedido-card status-${p.status}`;
+    div.innerHTML = `
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+        <h3 style="font-size:16px;color:#FFF">Pedido #${p.numeroPedido}</h3>
+        <span style="color:#888;font-size:12px">${p.data}</span>
+      </div>
+      <p style="color:#AAA;font-size:14px"><strong>Cliente:</strong> ${p.cliente.nome}</p>
+      <p style="color:#AAA;font-size:14px"><strong>Tel:</strong> ${p.cliente.tel}</p>
+      <p style="color:#AAA;font-size:14px"><strong>End:</strong> ${p.cliente.endereco}</p>
+      <p style="color:#AAA;font-size:14px;margin-bottom:8px"><strong>Pagamento:</strong> ${p.pagamento} | <strong>Status:</strong> ${p.status}</p>
+      <div style="padding:10px;background:#222;border-radius:6px;margin-bottom:10px">
+        ${p.itens.map(i => `<p style="color:#CCC;font-size:13px">${i.quantidade}x ${i.nome} — ${fmt(i.preco * i.quantidade)}</p>`).join('')}
+      </div>
+      <p style="color:#D4AF37;font-weight:bold;font-size:16px">Total: ${fmt(p.total)}</p>
+      <div class="botoes">
+        ${stIdx < 3 ? `<button class="btn-dourado btn-pequeno" onclick="avancarStatus(${p.id})">➡️ ${STATUS[stIdx + 1]}</button>` : ''}
+        <button class="btn-vermelho btn-pequeno" onclick="apagarPedido(${p.id})">🗑️ Apagar</button>
+      </div>`;
+    c.appendChild(div);
+  });
+}
+
+function avancarStatus(id) {
+  const pedidos = JSON.parse(localStorage.getItem('blackburger_pedidos') || '[]');
+  const p = pedidos.find(x => x.id === id);
+  const stIdx = STATUS.indexOf(p.status);
+  if (stIdx < 3) {
+    p.status = STATUS[stIdx + 1];
+    localStorage.setItem('blackburger_pedidos', JSON.stringify(pedidos));
+    carregarPedidos();
+  }
+}
+
+function apagarPedido(id) {
+  if (!confirm('Tem certeza que deseja APAGAR este pedido?')) return;
+  let pedidos = JSON.parse(localStorage.getItem('blackburger_pedidos') || '[]');
+  pedidos = pedidos.filter(x => x.id !== id);
+  localStorage.setItem('blackburger_pedidos', JSON.stringify(pedidos));
+  carregarPedidos();
+}
+
+function apagarTodos() {
+  if (!confirm('⚠️ CUIDADO! Isso vai APAGAR TODOS os pedidos! Tem certeza?')) return;
+  localStorage.removeItem('blackburger_pedidos');
+  localStorage.removeItem('blackburger_ultimo');
+  carregarPedidos();
+}
+
+function verificarNovosPedidos() {
+  if (!admin) return;
+  const pedidos = JSON.parse(localStorage.getItem('blackburger_pedidos') || '[]');
+  const totalAtual = pedidos.length;
+  if (ultimoTotalPedidos > 0 && totalAtual > ultimoTotalPedidos) {
+    tocarNotificacao();
+  }
+  ultimoTotalPedidos = totalAtual;
+}
+
+function tocarNotificacao() {
+  try {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    osc.connect(gain); gain.connect(audioContext.destination);
+    osc.frequency.value = 880; osc.type = 'sine';
+    gain.gain.value = 0.3;
+    osc.start();
+    setTimeout(() => { osc.stop(); audioContext.close(); }, 200);
+    setTimeout(() => {
+      const ac2 = new (window.AudioContext || window.webkitAudioContext)();
+      const o2 = ac2.createOscillator();
+      const g2 = ac2.createGain();
+      o2.connect(g2); g2.connect(ac2.destination);
+      o2.frequency.value = 1100; o2.type = 'sine';
+      g2.gain.value = 0.3;
+      o2.start();
+      setTimeout(() => { o2.stop(); ac2.close(); }, 200);
+    }, 250);
+  } catch (e) {}
+}
+
+function carregarCaixa() {
+  const pedidos = JSON.parse(localStorage.getItem('blackburger_pedidos') || '[]');
+  const totalGeral = pedidos.reduce((s, p) => s + p.total, 0);
+  const entregues = pedidos.filter(p => p.status === 'ENTREGUE').reduce((s, p) => s + p.total, 0);
+  const preparando = pedidos.filter(p => p.status === 'PREPARANDO' || p.status === 'PRONTO').reduce((s, p) => s + p.total, 0);
+  const novos = pedidos.filter(p => p.status === 'NOVO').reduce((s, p) => s + p.total, 0);
+  const taxas = pedidos.filter(p => p.tipoEntrega === 'entrega').reduce((s, p) => s + p.taxa, 0);
+
+  document.getElementById('qtd-total').textContent = `${pedidos.length} pedido${pedidos.length !== 1 ? 's' : ''}`;
+  document.getElementById('valor-total').textContent = fmt(totalGeral);
+  document.getElementById('valor-entregues').textContent = fmt(entregues);
+  document.getElementById('valor-preparando').textContent = fmt(preparando);
+  document.getElementById('valor-novos').textContent = fmt(novos);
+  document.getElementById('valor-taxas').textContent = fmt(taxas);
+  document.getElementById('valor-liquido').textContent = fmt(totalGeral - taxas);
+}
+
+function carregarRelatorio(tipo) {
+  document.querySelectorAll('#pag-relatorios .filtro-btn').forEach(b => b.classList.remove('ativo'));
+  event.target?.classList.add('ativo');
+  
+  const pedidos = JSON.parse(localStorage.getItem('blackburger_pedidos') || '[]');
+  const agora = new Date();
+  let filtrados = [];
+  let periodoTexto = '';
+
+  switch(tipo) {
+    case 'hoje':
+      const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+      filtrados = pedidos.filter(p => new Date(p.timestamp) >= hoje);
+      periodoTexto = 'Hoje (' + hoje.toLocaleDateString('pt-BR') + ')';
+      break;
+    case 'semana':
+      const inicioSemana = new Date(agora);
+      inicioSemana.setDate(agora.getDate() - agora.getDay());
+      filtrados = pedidos.filter(p => new Date(p.timestamp) >= inicioSemana);
+      periodoTexto = 'Esta Semana';
+      break;
+    case 'mes':
+      const inicioMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
+      filtrados = pedidos.filter(p => new Date(p.timestamp) >= inicioMes);
+      periodoTexto = agora.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+      break;
+    case 'todos':
+      filtrados = pedidos;
+      periodoTexto = 'Todo o Período';
+      break;
+  }
+
+  const totalGeral = filtrados.reduce((s, p) => s + p.total, 0);
+  const entregues = filtrados.filter(p => p.status === 'ENTREGUE').reduce((s, p) => s + p.total, 0);
+  const andamento = filtrados.filter(p => p.status !== 'ENTREGUE').reduce((s, p) => s + p.total, 0);
+  const taxas = filtrados.filter(p => p.tipoEntrega === 'entrega').reduce((s, p) => s + p.taxa, 0);
+
+  document.getElementById('rel-periodo').textContent = 'Período: ' + periodoTexto;
+  document.getElementById('rel-qtd').textContent = `${filtrados.length} pedido${filtrados.length !== 1 ? 's' : ''}`;
+  document.getElementById('rel-total').textContent = fmt(totalGeral);
+  document.getElementById('rel-entregues').textContent = fmt(entregues);
+  document.getElementById('rel-andamento').textContent = fmt(andamento);
+  document.getElementById('rel-taxas').textContent = fmt(taxas);
+  document.getElementById('rel-liquido').textContent = fmt(totalGeral - taxas);
+}
+</script>
+</body>
+</html>
